@@ -113,4 +113,40 @@ def cycle(f1, f2, f3):
     >>> do_two_cycles(1)
     19
     """
-    "*** YOUR CODE HERE ***"
+    def g(n):
+        def h(x):
+            fs = [f1, f2, f3]   #循环调用list中的function
+            count = n
+            opt = 0     #list下标索引
+            val = x     
+            while count > 0:
+                val = fs[opt](val)
+                opt = (opt+1) % 3
+                count -= 1
+            return val
+        return h    
+    return g    
+
+#test
+def add1(x):
+    return x + 1
+def times2(x):
+    return x * 2
+def add3(x):
+    return x + 3
+my_cycle = cycle(add1, times2, add3)
+
+identity = my_cycle(0)
+assert identity(5) == 5
+
+add_one_then_double = my_cycle(2)
+assert add_one_then_double(1) == 4
+
+do_all_functions = my_cycle(3) 
+do_all_functions(2) == 9
+ 
+do_more_than_a_cycle = my_cycle(4)
+assert do_more_than_a_cycle(2) == 10
+
+do_two_cycles = my_cycle(6)
+assert do_two_cycles(1) == 19 
