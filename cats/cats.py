@@ -36,10 +36,15 @@ def pick(paragraphs, select, k):
     >>> pick(ps, s, 2)
     ''
     """
-    # BEGIN PROBLEM 1
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 1
-
+    assert k >= 0, "k should be >= 0"
+    idx = 0
+    while k >= 0 and idx < len(paragraphs):
+        if select(paragraphs[idx]):
+            k -= 1
+            if k < 0:
+                return paragraphs[idx]
+        idx += 1
+    return '' 
 
 def about(subject):
     """Return a function that takes in a paragraph and returns whether
@@ -55,10 +60,14 @@ def about(subject):
     'Nice pup.'
     """
     assert all([lower(x) == x for x in subject]), "subjects should be lowercase."
-
-    # BEGIN PROBLEM 2
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 2
+    def about_sth(paragraph):
+        words = split(remove_punctuation(paragraph))
+        for word in words:
+            for s in subject:
+                if lower(word) == lower(s):
+                    return True
+        return False
+    return about_sth    
 
 
 def accuracy(typed, source):
@@ -86,9 +95,19 @@ def accuracy(typed, source):
     """
     typed_words = split(typed)
     source_words = split(source)
-    # BEGIN PROBLEM 3
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 3
+    if len(typed_words) == 0:       #处理特殊情况
+        if len(source_words) == 0:
+            return 100.0
+        else:
+            return 0.0
+    else:
+        count = 0   #记录有多少个word匹配成功
+        idx = 0 
+        while idx < len(typed_words) and idx < len(source_words):
+            if typed_words[idx] == source_words[idx]:
+                count += 1
+            idx += 1
+        return count / len(typed_words) * 100
 
 
 def wpm(typed, elapsed):
@@ -104,9 +123,8 @@ def wpm(typed, elapsed):
     2.0
     """
     assert elapsed > 0, "Elapsed time must be positive"
-    # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 4
+    num = len(typed) / 5
+    return num / elapsed * 60
 
 
 ################
@@ -134,11 +152,21 @@ def memo_diff(diff_function):
     cache = {}
 
     def memoized(typed, source, limit):
-        # BEGIN PROBLEM EC
-        "*** YOUR CODE HERE ***"
-        # END PROBLEM EC
+        immutable_info = (typed, source)
+        if immutable_info not in cache:
+            diff = diff_function(typed, source, limit)
+            cache[immutable_info] = (diff, limit)
+            return diff
+        else:
+            # if limit <= cache[immutable_info][1]:
+            #     return cache[immutable_info][0]
+            # else:
+            #     diff = diff_function(typed, source, limit)
+            #     cache[immutable_info] = (diff, limit)
+            return cache[immutable_info][0]
 
     return memoized
+
 
 
 ###########
@@ -165,9 +193,20 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     >>> autocorrect("tosting", ["testing", "asking", "fasting"], first_diff, 10)
     'testing'
     """
-    # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 5
+    min_diff = diff_function(typed_word, word_list[0], limit)
+    min_diff_word = word_list[0]
+    for word in word_list:
+        if word == typed_word:
+            return word
+        else:
+            diff = diff_function(typed_word, word, limit)
+            if diff < min_diff:
+                min_diff = diff
+                min_diff_word = word
+    if min_diff > limit:
+        return typed_word
+    else:
+        return min_diff_word
 
 
 def furry_fixes(typed, source, limit):
@@ -192,9 +231,26 @@ def furry_fixes(typed, source, limit):
     >>> furry_fixes("rose", "hello", big_limit)   # Substitute: r->h, o->e, s->l, e->l, length difference of 1.
     5
     """
-    # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
-    # END PROBLEM 6
+    # def helper_furry_fixes(typed, source, limit, count):    #辅助函数,用count标记当前状态的两个子串前面有几个字符不同
+    #     if typed == '' or source == '':
+    #         return abs(len(typed) - len(source))    #base case
+    #     else:
+    #         if typed[0] != source[0]:
+    #             count += 1
+    #             if count > limit:       #如果前面已经有超过limit个字符不同, 结束递归, 立即返回, 这个时候返回值大小具体多少无所谓,只要大于limit就ok,这里取1也可以
+    #                 return count
+    #             return 1 + helper_furry_fixes(typed[1:], source[1:], limit, count)
+    #         else:
+    #             return helper_furry_fixes(typed[1:], source[1:], limit, count)
+    # return helper_furry_fixes(typed, source, limit, 0)
+    if limit < 0:
+        return 1
+    elif typed == '' or source == '':
+        return len(typed) + len(source)
+    elif typed[0] == source[0]:
+        return furry_fixes(typed[1:], source[1:], limit)
+    else:
+        return 1 + furry_fixes(typed[1:], source[1:], limit - 1)
 
 
 def minimum_mewtations(typed, source, limit):
@@ -214,23 +270,17 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    if limit < 0: # Base cases should go here, you may add more base cases as needed.
+        return 0
+    elif len(typed) == 0 or len(source) == 0:
+        return len(typed) + len(source)
+    elif typed[0] == source[0]:
+        return minimum_mewtations(typed[1:], source[1:], limit)
     else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+        add = minimum_mewtations(typed, source[1:], limit - 1)
+        remove = minimum_mewtations(typed[1:], source, limit - 1)
+        substitute = minimum_mewtations(typed[1:], source[1:], limit - 1)
+        return 1 + min(min(add, remove), substitute)
 
 
 # Ignore the line below
@@ -240,7 +290,17 @@ minimum_mewtations = count(minimum_mewtations)
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
     If you implement this function, it will be used."""
-    assert False, "Remove this line to use your final_diff function."
+    if limit < 0: # Base cases should go here, you may add more base cases as needed.
+        return 0
+    elif len(typed) == 0 or len(source) == 0:
+        return len(typed) + len(source)
+    elif typed[0] == source[0]:
+        return minimum_mewtations(typed[1:], source[1:], limit)
+    else:
+        add = minimum_mewtations(typed, source[1:], limit - 1)
+        remove = minimum_mewtations(typed[1:], source, limit - 1)
+        substitute = minimum_mewtations(typed[1:], source[1:], limit - 1)
+        return 1 + min(min(add, remove), substitute)
 
 
 FINAL_DIFF_LIMIT = 6  # REPLACE THIS WITH YOUR LIMIT
@@ -274,9 +334,16 @@ def report_progress(typed, source, user_id, upload):
     ID: 3 Progress: 0.2
     0.2
     """
-    # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 8
+    assert len(typed) <= len(source), "typed的长度一定小于等于source"
+    
+    idx = 0
+    while idx < len(typed) and typed[idx] == source[idx]:
+        idx += 1
+    progress = idx / len(source)
+
+    progress_info = { 'id':user_id, 'progress':progress }
+    upload(progress_info)   #上传进度
+    return progress
 
 
 def time_per_word(words, timestamps_per_player):
@@ -300,6 +367,11 @@ def time_per_word(words, timestamps_per_player):
     tpp = timestamps_per_player  # A shorter name (for convenience)
     # BEGIN PROBLEM 9
     times = []  # You may remove this line
+    for timestamps in timestamps_per_player:
+        cur_times = []
+        for i in range(1, len(timestamps)):
+            cur_times.append(timestamps[i] - timestamps[i-1])
+        times.append(cur_times)
     # END PROBLEM 9
     return {'words': words, 'times': times}
 
@@ -325,9 +397,19 @@ def fastest_words(words_and_times):
     words, times = words_and_times['words'], words_and_times['times']
     player_indices = range(len(times))  # contains an *index* for each player
     word_indices = range(len(words))    # contains an *index* for each word
-    # BEGIN PROBLEM 10
-    "*** YOUR CODE HERE ***"
-    # END PROBLEM 10
+    
+    result = [[] for _ in player_indices]
+
+    for word_indice in word_indices: #遍历word list中的每个word
+        min_time = get_time(times, 0, word_indice)
+        min_player_indice = 0
+        for player_indice in player_indices:  #内层循环遍历所有玩家,找出当前用时最少的玩家索引
+            cur_time = get_time(times, player_indice, word_indice)
+            if cur_time < min_time:
+                min_time = cur_time
+                min_player_indice = player_indice
+        result[min_player_indice].append(words[word_indice])    #添加该单词到对应的玩家的列表中
+    return result
 
 
 def check_words_and_times(words_and_times):
@@ -352,7 +434,7 @@ def get_time(times, player_num, word_index):
     return times[player_num][word_index]
 
 
-enable_multiplayer = False  # Change to True when you're ready to race.
+enable_multiplayer = True  # Change to True when you're ready to race.
 
 ##########################
 # Command Line Interface #
